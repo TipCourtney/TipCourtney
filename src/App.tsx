@@ -1,67 +1,83 @@
-import React, { ReactElement } from "react";
-import logo from "./logo.svg";
+import React, { ReactElement, useState } from "react";
 import "./App.css";
-import { createTheme, Grid, ThemeProvider, Typography } from "@mui/material";
-import BlueBox from "./BlueBox";
-import SecondOption from "./SecondOption";
-import { isPropertySignature } from "typescript";
+import TipScreen from "./TipScreen";
+import CommentAndSubmit from "./CommentAndSubmit";
+import CustomTipAmount from "./CustomTipAmount";
+import ViewComments from "./ViewComments";
+import { Button } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 
 function App() {
+  let [tipPageToShow, setTipPageToShow] = useState<TipPages>(TipPages.TIP);
+  let [tipValue, setTipValue] = useState<String>("");
+  let [comments, setComments] = useState<TipAndComment[]>([]);
+
+  let addComment = (comment: String) => {
+    let newComment: TipAndComment = { tip: tipValue, comment: comment };
+    setComments((comments) => [...comments, newComment]);
+  };
+
+  function showTipPage() {
+    switch (tipPageToShow) {
+      case TipPages.TIP:
+        return (
+          <TipScreen
+            setTipPageToShow={setTipPageToShow}
+            setTipValue={setTipValue}
+          />
+        );
+      case TipPages.COMMENT:
+        return (
+          <CommentAndSubmit
+            setTipPageToShow={setTipPageToShow}
+            addComment={addComment}
+          />
+        );
+      case TipPages.CUSTOM:
+        return (
+          <CustomTipAmount
+            setTipPageToShow={setTipPageToShow}
+            addComment={addComment}
+            setTipValue={setTipValue}
+          />
+        );
+      case TipPages.VIEW_COMMENTS:
+        return (
+          <ViewComments
+            setTipPageToShow={setTipPageToShow}
+            comments={comments}
+          />
+        );
+    }
+  }
   return (
-    // <div className={"App"}>
-    //   <SecondOption />
-    // </div>
     <div className={"App"}>
-      <Grid container className={"Container"} direction="column">
-        <Grid item xs={12} style={{ marginBottom: "4%" }}>
-          <Typography color="#4E4F51" fontSize="1.6rem">
-            Leave a tip?
-          </Typography>
-        </Grid>
-        <Grid container xs={12} style={{ marginBottom: "3%" }}>
-          <Grid item xs={4} style={{ paddingRight: "2%", height: "100px" }}>
-            <BlueBox>
-              <TipAmount>15%</TipAmount>
-            </BlueBox>
-          </Grid>
-          <Grid item xs={4} style={{ paddingRight: "2%", width: "30%" }}>
-            <BlueBox>
-              <TipAmount>25%</TipAmount>
-            </BlueBox>
-          </Grid>
-          <Grid item xs={4}>
-            <BlueBox>
-              <TipAmount>25%</TipAmount>
-            </BlueBox>
-          </Grid>
-        </Grid>
-        <Grid container xs={12}>
-          <div style={{ minWidth: "100%", height: "50px" }}>
-            <BlueBox>
-              <Typography
-                color="#F0F4F5"
-                textTransform="none"
-                variant="subtitle1"
-              >
-                Custom
-              </Typography>
-            </BlueBox>
-          </div>
-        </Grid>
-      </Grid>
+      {tipPageToShow == TipPages.TIP ? (
+        <Button
+          onClick={() => {
+            setTipPageToShow(TipPages.VIEW_COMMENTS);
+          }}
+        >
+          <CloseIcon />
+        </Button>
+      ) : (
+        <div></div>
+      )}
+      {showTipPage()}
     </div>
   );
 }
 
-type Props = {
-  children: ReactElement | string;
-};
-
-function TipAmount(props: Props) {
-  return (
-    <Typography color="#F0F4F5" textTransform="none" variant="h4">
-      {props.children}
-    </Typography>
-  );
-}
 export default App;
+
+export enum TipPages {
+  TIP,
+  CUSTOM,
+  COMMENT,
+  VIEW_COMMENTS,
+}
+
+export interface TipAndComment {
+  tip: String;
+  comment: String;
+}
